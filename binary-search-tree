@@ -1,0 +1,329 @@
+#include "binary-search-tree.h"
+#include "iostream"
+#include "queue"
+using namespace std;
+
+BinarySearchTree::Node::Node(DataType newval)
+{
+    val = newval; //set value of node to new value
+    left = nullptr; //left child node pointer to null
+    right = nullptr; //right child node pointer to null
+}
+
+// Optional function that recursively gets the maximum depth for a given node.
+int BinarySearchTree::getNodeDepth(Node* n) const
+{
+    if (n == nullptr){
+        return -1;
+    }
+    else if (n->left == nullptr && n->right == nullptr){
+        return 0; //only root node present -> height = 0
+    }
+    else {
+        int leftdepth = getNodeDepth(n->left); //height if you go down left nodes only
+        int rightdepth = getNodeDepth(n->right);//height if you go down right nodes only
+
+        if (leftdepth > rightdepth){//if left depth is max depth
+            return 1 + leftdepth;//left depth is height from the left node so add 1 for the parent
+        }
+        else {//if right depth is max
+            return 1 + rightdepth;
+        }
+        //return 1 + max(getNodeDepth(n->left), getNodeDepth(n->right));
+    }
+}
+
+// Default constructor to initialize the root.
+BinarySearchTree::BinarySearchTree()
+{
+    root_ = nullptr; //initialize a null root node
+    size_ = 0; //set size to 0
+}
+
+// Destructor of the class BinarySearchTree. It deallocates the memory
+// space allocated for the binary search tree.
+BinarySearchTree::~BinarySearchTree()
+{
+    //similar to level traversal print function but instead of printing each node, delete it
+    if (root_ == nullptr){
+        return; //if empty tree don't do anything
+    }
+
+    queue <Node*> q; //make an empty queue
+    q.push(root_); //insert root node to the back of the queue
+    while (q.empty() == false){//while there is something in the queue
+        Node *p = q.front();//points to the node at the front of the queue
+
+        if (p->left != nullptr){//if left child node is not empty, add it to the back of queue
+            q.push(p->left);
+        }
+        if (p->right != nullptr){//if right child node is not empty, add it to the back of queue
+            q.push(p->right);
+        }
+
+        delete p; //delete current node
+        p = NULL;
+        q.pop();//remove first element in list (current node)
+    }
+}
+
+// Returns the number of nodes in the tree.
+unsigned int BinarySearchTree::size() const
+{
+    return size_;
+}
+
+// Returns the maximum value of a node in the tree. You can assume that
+// this function will never be called on an empty tree.
+BinarySearchTree::DataType BinarySearchTree::max() const
+{
+    Node* temp = root_; //temp pointer to root
+    while (temp->right != nullptr){
+       temp = temp->right;//traverse through right nodes
+    }
+    int maxval = temp->val;//max value is the very last right node
+    return maxval;
+}
+
+// Returns the minimum value of a node in the tree. You can assume that
+// this function will never be called on an empty tree.
+BinarySearchTree::DataType BinarySearchTree::min() const
+{
+    Node* temp = root_; //temp pointer to root
+    while (temp->left != nullptr){
+        temp = temp->left;//traverse through left nodes
+    }
+    int minval = temp->val;//min value is the very last left node
+    return minval;
+}
+
+// Returns the maximum depth of the tree. A tree with only the root node has a
+// depth of 0. You can assume that this function will never be called on an
+// empty tree.
+unsigned int BinarySearchTree::depth() const
+{
+    return getNodeDepth(root_);
+}
+
+//done in level-order traversal (BFT)
+// You can print the tree in whatever order you prefer. However, methods such
+// as in-order or level-order traversal could be the most useful for debugging.
+void BinarySearchTree::print() const
+{
+    if(root_ == nullptr){
+        cout << "tree is empty, nothing to print" << endl;
+        return;
+    }
+    queue <Node*> q; //make an empty queue
+    q.push(root_); //insert root node to the back of the queue
+    while (q.empty() == false){//while there is something in the queue
+        Node *p = q.front();//points to the node at the front of the queue
+        q.pop();//remove first element of queue
+
+        cout << p->val << " -> ";
+        if (p->left != nullptr){//if left child node is not empty, add it to the back of queue
+            q.push(p->left);
+        }
+        if (p->right != nullptr){//if right child node is not empty, add it to the back of queue
+            q.push(p->right);
+        }
+        cout << endl;
+    }
+}
+
+// Returns true if a node with the value val exists in the tree; otherwise,
+// it returns false. (basically a search function)
+bool BinarySearchTree::exists(DataType val) const
+{
+    Node* currentnode = root_;
+
+    while (currentnode != nullptr){
+        if (currentnode->val == val){ //if current node val matches given value return true
+            return true;
+        }
+        else if(val > currentnode->val){//if val is greater than parent node search right
+            currentnode = currentnode->right;
+        }
+        else{//if val is less than parent node value search left
+            currentnode = currentnode->left;
+        }
+    }
+    return false; //if val does not exist in tree return false
+}
+
+// Returns a pointer to the root node
+BinarySearchTree::Node* BinarySearchTree::getRootNode()
+{
+    return root_;
+}
+
+// Returns the root node pointer address
+BinarySearchTree::Node** BinarySearchTree::getRootNodeAddress()
+{
+    //Node **addressofroot = &root_;
+    return &root_;
+}
+
+// Inserts the value val into the tree. Returns false if val already exists in
+// the tree, and true otherwise.
+bool BinarySearchTree::insert(DataType val)
+{
+    if (exists(val)){ //if value already exists in tree return false
+        return false;
+    }
+    else if (size_ == 0){//if tree is empty
+        root_ = new Node(val);//create new root node with val
+        size_ = size_ + 1;//update tree size
+        return true;
+    }
+    else{//tree is not empty and value is not already there -> insert node
+
+        Node *current = root_;
+        Node *parent = nullptr;
+
+        while (current != nullptr){//set current to the place where node is inserted, current is child of parent
+
+            parent = current;
+            if (val < current->val){
+                current = current->left;
+            }
+            else{
+                current = current->right;
+            }
+        }
+
+        if (val < parent->val){//if val is less than parent val then insert left child
+            parent->left = new Node(val);
+            size_ = size_ + 1;//update tree size
+            return true;
+        }
+        else{
+            parent->right = new Node(val);
+            size_ = size_ + 1;//update tree size
+            return true;
+        }
+    }
+}
+
+// Removes the node with the value val from the tree. Returns true if successful,
+// and false otherwise.
+bool BinarySearchTree::remove(DataType val)
+{
+    if (!exists(val)){//if val does not exist in tree (or empty tree), nothing to remove
+        return false;
+    }
+
+    //find the node to remove
+    Node *current = root_;
+    Node *parent = NULL;
+    bool found = false;
+
+    while (current != nullptr){
+        if (current->val == val){//if val is the root val
+            found = true;
+            break;
+        }
+        else if (val < current->val){ //if val is less than root, move to left subtree
+            parent = current;
+            current = current->left;
+        }
+        else { //if val is greater than root, move to right subtree
+            parent = current;
+            current = current->right;
+        }
+    }
+    //now current = the node to remove, parent is the parent node of current
+
+    //if leaf node, remove it, return true (no children)
+    if (current->right == nullptr && current->left == nullptr){//if node to remove is leaf node
+        if (current->val == root_->val){//if node to remove is root
+            root_ = nullptr;
+        }
+        else if (parent->left == current){ //if the left child of parent is node to remove
+            parent->left = nullptr;//remove left child
+        }
+        else {
+            parent->right = nullptr;//else remove right child
+        }
+
+        delete current;
+        current = nullptr;
+        size_ = size_ - 1; //update size of tree
+        return true;
+    }
+
+        //if only one child node, remove val, link val's parent with val's only child
+    else if (current->right == nullptr && current->left != nullptr){//only child is left node
+
+        if (parent->left->val == current->val){
+            parent->left = current->left; //link parents left with the only child (replace current node)
+        }
+        else {
+            parent->right = current->left;//link parents right with the only child (replace current node)
+        }
+
+        delete current;
+        current = nullptr;
+        size_ = size_ - 1; //update size of tree
+        return true;
+    }
+
+    else if (current->right != nullptr && current->left == nullptr){//only child is right node
+
+        if (parent->left == current){
+            parent->left = current->right;
+        }
+        else {
+            parent->right = current->right;
+        }
+
+        delete current;
+        current = nullptr;
+        size_ = size_ - 1; //update size of tree
+        return true;
+    }
+
+    //if val has two child nodes, replace val node value with predecessor or successor value, delete original predecessor or successor
+    else if (current->right != nullptr && current->left != nullptr){ //2 children
+        //find predecessor (max value in left subtree)
+        Node* predecessor = current->left;
+        Node* predecessorParent = current;
+
+        while (predecessor->right != nullptr){ //find the right most in left subtree (largest val, could be leaf node or have one left child)
+            predecessorParent = predecessor;
+            predecessor = predecessor->right;
+        }
+        current->val = predecessor->val; //replace val of node to remove with predecssor
+
+        //now need to delete predecessor
+
+        //special case
+        if (predecessorParent == current){
+            current->left = predecessor->left; //connect left child of predecessor with current
+        }
+
+        //normal case
+        else{
+            if (predecessor->left == nullptr){ //if predecessor has no child
+                predecessorParent->right = nullptr; //remove predecessor
+            }
+            else { //if it has left child
+                predecessorParent->right = predecessor->left; //connect with parent
+            }
+        }
+
+        delete predecessor;
+        predecessor = nullptr;
+        size_ = size_ - 1; //update size of tree
+        return true;
+    }
+}
+
+void BinarySearchTree::updateNodeBalance(Node *n) {
+    if (n == NULL){
+        n->avlBalance = 0;
+    }
+    else{
+        n->avlBalance = getNodeDepth(n->left) - getNodeDepth(n->right);
+    }
+}

@@ -1,0 +1,150 @@
+#include "dynamic-stack.h"
+#include "iostream"
+using namespace std;
+
+const DynamicStack::StackItem DynamicStack::EMPTY_STACK = -999;
+
+// CONSTRUCTORS/DESTRUCTOR
+// Default constructor of the class DynamicStack. It uses 16 as the initial
+// capacity of the array, and allocates the required memory space for the
+// stack. The function appropriately initializes the fields of the created
+// empty stack.
+DynamicStack::DynamicStack() {
+    capacity_ = 16;//initial capacity is 16
+    init_capacity_ = 16;
+    size_ = 0;//size is 0
+    items_ = new StackItem[capacity_];//dynamically allocate an array of size 16 of stack items
+}
+
+// Parametric constructor of the class DynamicStack. It allocates the required
+// memory space for the stack of the given capacity. The function
+// appropriately initializes the fields of the created empty stack.
+DynamicStack::DynamicStack(unsigned int capacity){
+    capacity_ = capacity;//capacity is 16
+    init_capacity_ = capacity;//initial capacity can use with pop
+    size_ = 0;//size is 0
+    items_ = new StackItem[capacity_];//dynamically allocate an array of size capacity
+}
+
+// Destructor of the class DynamicStack. It deallocates the memory space
+// allocated for the stack.
+DynamicStack::~DynamicStack() {
+    delete[] items_;//deallocate memory for stack array
+
+}
+
+// ACCESSORS
+// Returns the number of items in the stack.
+bool DynamicStack::empty() const {
+    if (size_ == 0){//stack is empty
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+// Returns true if the stack is empty and false otherwise.
+int DynamicStack::size() const {
+    return size_;
+}
+
+// MUTATORS
+// Takes as an argument a StackItem value. If the stack is not full, the value
+// is pushed onto the stack. Otherwise, the capacity of the stack is doubled,
+// and the item is then pushed onto the resized stack.
+void DynamicStack::push(StackItem value) { //similar to insert - inserts to top of stack
+
+    if (size_ == capacity_){//check if stack is full
+        //double capacity and push item to resized stack
+
+        int *newstack = new int [capacity_*2];//initialize new array of double current capacity
+        capacity_ = capacity_*2;//update capacity
+
+        //copy all items to the new array
+        for (int i = 0; i < size_; i++){
+            newstack[i] = items_[i];
+        }
+
+        int *temp = items_;//temp pointer to current stack
+        items_ = newstack;//set items to new stack with double capacity
+        delete [] temp;//delete pointer
+        temp = nullptr;//set to null to avoid dangling pointer
+
+        //now push value into new stack
+        items_[size_] = value;//insert value to top (end of array)
+        size_ = size_ + 1;//update size of stack
+    }
+    else{// stack is not full, can push
+        items_[size_] = value;//insert value to top (end of array)
+        size_ = size_ + 1;//update size of stack
+    }
+}
+
+// Removes and returns the top item from the stack as long as the stack is
+// not empty. If the number of items remaining in the stack after popping
+// is less than or equal to one quarter of the capacity of the array, then
+// the array is halved. However, if the new halved capacity is less than
+// the initial capacity, then no resizing takes place. Finally, If the stack
+// is empty before the pop, the EMPTY STACK constant is returned.
+DynamicStack::StackItem DynamicStack::pop() { //similar to remove - removes and returns top (last index) item
+    if (size_ == 0){
+        return EMPTY_STACK;
+    }
+    else{
+        int topitem = items_[size_ -1]; //stores item at last index (to return)
+        items_[size_ - 1] = 0; //remove value at last index -> note to self: this line is not needed you can just update size and the list will ignore the last index value
+        size_--;
+
+        int quartercap = capacity_/4; //quarter capacity
+        int halfcap = capacity_/2;//half capacity
+
+        if (capacity_ <= init_capacity_){//if cap is less than or equal to initial cap here, then if you half it will be less than inital so do nothing
+            //nothing
+        }
+        else if (size_ <= quartercap){//if capacity is greater than initial capacity and size is less than quartercap then half array
+            int *newstack = new int [halfcap];//initialize new array of half current capacity
+            capacity_ = halfcap;//update capacity
+
+            //copy all items to the new array
+            for (int i = 0; i < size_; i++){
+                newstack[i] = items_[i];
+            }
+
+            int *temp = items_;//temp pointer to current stack
+            items_ = newstack;//set items to new stack with double capacity
+            delete [] temp;//delete pointer
+            temp = nullptr;//set to null to avoid dangling pointer
+        }
+        return topitem; //return popped value
+    }
+}
+
+// Returns the value at the top of the stack without removing it. If the
+// stack is empty, it returns the EMPTY_STACK constant instead.
+DynamicStack::StackItem DynamicStack::peek() const {// similar to select - return value of top item
+    if (size_ == 0){
+        return EMPTY_STACK; //stack is empty, it returns the EMPTY_STACK constant instead.
+    }
+    else{
+        //top is the last element of the array (last thing you add)
+        return items_[size_-1]; //Returns the value at the top of the stack
+    }
+}
+
+// Prints the stack items sequentially and in order, from the top to the
+// bottom of the stack.
+//not used for test cases / NOT graded
+void DynamicStack::print() const {
+    if(size_ == 0){//if size = 0, stack is empty -> nothing to print
+        cout << "stack is empty" << endl;
+        return;
+    }
+    else{
+        for (int i = size_ - 1; i >= 0; i--){//iterate through array from last index (top) to first index (bottom)
+            cout << items_[i] << endl;//print each item in stack
+        }
+        cout << endl;
+    }
+
+}

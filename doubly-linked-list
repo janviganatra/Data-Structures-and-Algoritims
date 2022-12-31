@@ -1,0 +1,279 @@
+#include "doubly-linked-list.h"
+#include <iostream>
+using namespace std;
+
+DoublyLinkedList::Node::Node(DataType data) //initialize values in struct Node
+{
+    value = data; //set value of node to data
+    next = nullptr; //set pointer to next node null
+    prev = nullptr; //set pointer to previous node null
+}
+
+// CONSTRUCTOR/DESTRUCTOR
+
+DoublyLinkedList::DoublyLinkedList() // constructor Create a new empty DoublyLinkedList.
+{
+    head_ = nullptr; //set pointer to first element (head) null
+    tail_ = nullptr; //set pointer to last element (tail) null
+    size_ = 0; //initialize size
+}
+
+DoublyLinkedList::~DoublyLinkedList() // Destroy this DoublyLinkedList, freeing all dynamically allocated memory.
+
+{
+    //loop through list to delete and set all dynamically allocated pointers to null
+    while (head_ != nullptr){
+        Node *temp = head_;
+        head_ = head_->next;
+        delete temp;
+        temp = nullptr;
+    }
+}
+
+// ACCESSORS
+
+unsigned int DoublyLinkedList::size() const // Returns the number of elements in the list.
+{
+    return size_; //return size
+}
+
+unsigned int DoublyLinkedList::capacity() const // Returns the maximum number of elements the list can hold.
+{
+    return CAPACITY; //no capacity for linked list can do any arbitrary large value
+}
+
+bool DoublyLinkedList::empty() const // Returns true if the list is empty, false otherwise.
+{
+    return size_ == 0; //if size of list is 0 return true else false
+}
+
+bool DoublyLinkedList::full() const // Returns true if the list is at capacity, false otherwise.
+{
+    return size_ == CAPACITY; //linked lists don't really have a capacity, if size == some very large number return true
+}
+
+// Returns the value at the given index in the list. If index is invalid,
+// return the value of the last element.
+DoublyLinkedList::DataType DoublyLinkedList::select(unsigned int index) const
+
+{
+    if (index >= 0 && index < size_){
+        Node *temp = head_;
+        for (int i = 0; i < index; i++){
+            temp = temp->next; //iterate through list until temp points to node at given index
+        }
+        return temp->value;
+    }
+    else {
+        return tail_->value;
+    }
+
+}
+
+// Searches for the given value, and returns the index of this value if found.
+// returns the size of the list otherwise.
+unsigned int DoublyLinkedList::search(DataType value) const
+{
+    Node *temp = head_;
+    for (int i = 0; i < size_; i++){ //iterate through entire list (index starts at 0 and size starts at 1)
+
+        if (temp->value == value){
+            return i;
+        }
+        else {
+            temp = temp->next;
+        }
+    }
+    return size_;
+}
+
+// Prints all elements in the list to the standard output.
+void DoublyLinkedList::print() const
+{
+    if (size_ == 0){ //if the list is empty print nothing
+        return;
+    }
+    else {
+        Node *temp = head_;
+        while (temp != nullptr){ //while there is a node in the list
+            cout << temp->value << "->"; //print value in node
+            temp = temp->next; //point temp to next node in list
+        }
+        cout << endl;
+    }
+}
+
+// Private method to get the node at an index. This is optional, but you will probably find it useful.
+DoublyLinkedList::Node* DoublyLinkedList::getNode(unsigned int index) const
+{
+    Node *temp = head_;
+    for (int i = 0; i < index; i++){
+        temp = temp->next;
+    }
+    return temp;
+}
+
+// MUTATORS
+// NOTE: all mutators for this class are boolean functions, returning
+// true if the call succeeds, and false if it fails
+
+bool DoublyLinkedList::insert(DataType value, unsigned int index) // Inserts a value into the list at a given index.
+{
+    if (index < 0 || index > size_){ //index can't be negative and index is greater than size (ex, trying to insert 4th index in 2 node list)
+        return false;
+    }
+    else if (full()){ //list is "full"
+        return false;
+    }
+    else if (index == 0 || size_ == 0) { //special case -> list is empty or index is 0 the new node is the head (insert front)
+        return insert_front(value);
+    }
+    else if (index == size_){ //insert node as last element
+        return insert_back(value);
+        }
+    else if (size_ > 0 && index < size_){ //list is not empty and the index is not last element -> insert somewhere in middle
+
+        Node *previous = head_;//pointing to first element in list
+        Node *temp = new Node(value); //pointing to node that is being inserted
+
+        for (int i = 0; i < index - 1; i++){ //this loop iterates through the list until pointer is at the node before the index we want to insert at
+            previous = previous->next;
+        }
+        temp->next = previous->next;
+        temp->prev = previous;
+        previous->next->prev = temp;
+        previous->next = temp;
+
+        size_++; //update list size
+        return true;
+    }
+}
+
+bool DoublyLinkedList::insert_front(DataType value) // Inserts a value at the beginning of the list.
+{
+    if (size_ == CAPACITY){ //if list is full
+        return false;
+    }
+    else if (size_ == 0){ //if list is empty, new node will be head and tail
+        head_ = new Node(value); //create a new node with value and point head towards it
+        tail_ = head_; //tail points to head (only element in list)
+        size_++; //update size of list
+        return true;
+    }
+    else {//if list has 1 or more nodes (but not "full")
+        Node *newNode = new Node(value); //create new node with value
+        newNode->next = head_;//new head's next points to current head
+        head_->prev = newNode;//prev of current head points to new head
+        head_ = newNode;//set head to new node
+        size_++; //update size
+        return true;
+    }
+
+}
+
+bool DoublyLinkedList::insert_back(DataType value) // Inserts a value at the end of the list.
+{
+    if (size_ == CAPACITY){ //if list is full
+        return false;
+    }
+    else if (size_ == 0){ //if list is empty, new node will be head and tail
+        tail_ = new Node(value); //create a new node with value and point head towards it
+        head_ = tail_; //tail points to head (only element in list)
+        size_++; //update size of list
+        return true;
+    }
+    else {
+        Node *temp = new Node(value);//create new node with value
+        Node *current = tail_;
+        tail_ = temp;
+        current->next = temp;
+        temp->prev = current;
+        size_++;//update size of list
+        return true;
+    }
+}
+
+bool DoublyLinkedList::remove(unsigned int index) // Deletes a value from the list at the given index.
+{
+    if (index >=size_ || index < 0 || size_ == 0){ //invalid index
+        return false;
+    }
+    else if (index == 0){ //if removing first element of list
+        return remove_front();
+    }
+    else if (index + 1 == size_){//if removing last element of list
+        remove_back();
+    }
+    else{//general case
+        Node *prevnodeIndex = getNode(index - 1);
+        Node *nextnodeIndex = getNode(index + 1);
+        nextnodeIndex->prev = prevnodeIndex;
+        prevnodeIndex->next = nextnodeIndex;
+        size_ = size_ - 1;
+        return true;
+    }
+}
+
+bool DoublyLinkedList::remove_front() // Deletes a value from the beginning of the list.
+{
+    if (size_ == 0){ //if list is empty no node to remove
+        return false;
+    }
+    if (size_ == 1){//if only one node in list
+        //Node *temp = tail_;//temp pointer pointing to tail
+        tail_ = nullptr;//set tail to null
+        head_ = nullptr;//set head to null (only node in list)
+        //delete temp;//delete dynamic memory
+        //temp = nullptr;
+        size_ = size_ - 1;//update size
+        return true;
+    }
+    else {
+        Node *temp = head_; //temp pointing to first node
+        head_ = head_->next; //head pointing to second node in list (new head)
+        delete temp;//delete dynamic memory
+        temp = nullptr;
+        size_ = size_ - 1;//update size
+        return true;
+    }
+}
+
+bool DoublyLinkedList::remove_back()  // Deletes a value at the end of the list.
+{
+    if (size_ == 0){ //if list is empty no node to remove
+        return false;
+    }
+    if (size_ == 1){//if only one node in list
+        Node *temp = tail_;//temp pointer pointing to tail
+        tail_ = nullptr;//set tail to null
+        head_ = nullptr;//set head to null (only node in list)
+        delete temp;//delete dynamic memory
+        temp = nullptr;
+        size_ = size_ - 1;//update size
+        return true;
+    }
+    else {
+        Node *temp = tail_;
+        tail_ = tail_->prev; //second last node is new tail
+        tail_->next = nullptr;
+        delete temp;
+        temp = nullptr;
+        size_ = size_ - 1;
+        return true;
+    }
+}
+
+bool DoublyLinkedList::replace(unsigned int index, DataType value) // Replaces the value at the given index with the given value.
+{
+    if (index < 0 || index > size_){//invalid index
+        return false;
+    }
+    else {
+        Node *temp = head_;
+        for (int i = 0; i < index; i++){
+            temp = temp->next;
+        }
+        temp->value = value ;
+        return true;
+    }
+}

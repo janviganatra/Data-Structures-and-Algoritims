@@ -1,0 +1,203 @@
+#include <iostream>
+#include "sequential-list.h"
+
+// CONSTRUCTORS/DESTRUCTOR
+
+
+SequentialList::SequentialList(unsigned int cap) //constructor // Create a new SequentialList with the given number of elements.
+{
+    capacity_ = cap; //capacity is max number of elements list can hold
+    size_ = 0;//initialize number of elements in the list
+    DataType * array = new DataType[capacity_]; //dynamically allocate memory to an array of ints
+    data_ = array; //  data_ is a pointer pointing to the array
+}
+
+SequentialList::~SequentialList()//destructor //Destroy this SequentialList, freeing all dynamically allocated memory.
+{
+    delete [] data_; //free the memory space for array
+    data_ = nullptr;//set pointer to NULL to avoid dangling pointer
+
+}
+
+// ACCESSORS
+
+unsigned int SequentialList::size() const //Returns the number of elements in the list.
+{
+    return size_;
+}
+
+unsigned int SequentialList::capacity() const //Returns the maximum number of elements the list can hold.
+{
+    return capacity_;
+}
+
+bool SequentialList::empty() const //Returns true if the list is empty, false otherwise.
+{
+    if (size_ == 0){ //if the list has no elements return true
+        //std::cout << "is empty" << std::endl;
+        return true;
+    }
+    else {
+        return false;
+    }
+    //can also just do return size_ == 0
+}
+
+bool SequentialList::full() const //Returns true if the list is at capacity, false otherwise.
+{
+    if (capacity_ == size_){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+SequentialList::DataType SequentialList::select(unsigned int index) const //returns something of type DataType so int
+// Returns the value at the given index in the list. If index is invalid,
+// return the value of the last element.
+{
+
+    if (size_ == 0){ //when list is empty, size = 0, any index will be invalid -> return a data item with index 0
+        return data_[0];
+    }
+    else if (index < size_ && index >= 0){ //if the index has a value and is a valid input for index
+        return data_[index];//return value
+    }
+    else {
+        return data_[size_ - 1]; //return value of the last element
+    }
+
+}
+
+unsigned int SequentialList::search(DataType val) const
+// Searches for the given value, and returns the index of this value if found.
+// Returns the size of the list otherwise
+{
+    for (int i = 0; i < size_; i++){ //traverse the list (only indexes with values)
+        if (data_[i] == val){ //if the value at index i is the given value
+            return i;//return index of value
+        }
+    }
+    return size_; //return size of list
+
+}
+
+void SequentialList::print() const // Prints all elements in the list to the standard output.
+{
+    for (int i = 0; i < size_; i++){
+        std::cout << data_[i] << " " << std::endl; //output each element in the array
+    }
+}
+
+//MUTATORS
+// remember to check if the operation is valid depending on the input and the current state of the data in the object
+
+bool SequentialList::insert(DataType val, unsigned int index) // Inserts a value into the list at a given index.
+{
+    if (full()){ //check if there is capacity (if size_ = capacity return false, else continue)
+        return false;
+    }
+    else if (index > size_ || index < 0){  //check to make sure there is no gap (if index > size return false else continue) and index is valid
+        return false;
+    }
+    else{
+        for (int i = size_ - 1; i >= 0 && i >= index; i--){ //start at the index and traverse list
+            data_[i + 1] = data_[i]; //shift value by one index
+        }
+
+        data_[index] = val; //insert value at given index
+        size_++; //update size of list
+        return true;
+    }
+}
+
+bool SequentialList::insert_front(DataType val) // Inserts a value at the beginning of the list.
+{
+    if (full()){ //check if there is capacity (if size_ = capacity return false, else continue)
+        return false;
+    }
+    else{
+        for (int i = size_ - 1; i >= 0; i--){ //traverse list
+            data_[i + 1] = data_[i]; //shift value by one index
+        }
+
+        data_[0] = val; //insert value at first index
+        size_++; //update size of list
+        return true;
+    }
+}
+
+bool SequentialList::insert_back(DataType val) // Inserts a value at the end of the list.
+{
+    if (full()){ //check if there is capacity (if size_ = capacity return false, else continue)
+        return false;
+    }
+    else{
+        data_[size_] = val; //insert value at end of list
+        size_++; //update size of list
+        return true;
+    }
+}
+
+
+bool SequentialList::remove(unsigned int index)  // Deletes a value from the list at the given index.
+{
+    if (empty()){ //check if list is empty
+        return false;
+    }
+    else if (index >= size_ || index < 0){  //check if index is valid (note: if index = size -> nothing to remove)
+        return false;
+    }
+    else{
+
+        for (int i = index; i < size_; i++){ //start at the index and traverse list
+            data_[i] = data_[i + 1]; //shift value by one index towards the front
+        }
+
+        size_--; //update size of list
+        return true;
+    }
+}
+
+bool SequentialList::remove_front() // Deletes a value from the beginning of the list.
+{
+    if (empty()) { //check if list is empty
+        return false;
+    }
+    else {
+
+        for (int i = 0; i < size_; i++){ //start at the index and traverse list
+            data_[i] = data_[i + 1]; //shift value by one index towards the front
+        }
+
+        size_--; //update size of list
+        return true;
+    }
+
+}
+
+bool SequentialList::remove_back() // Deletes a value at the end of the list.
+{
+    if (empty()) { //check if list is empty
+        return false;
+    } else {
+
+        data_[size_ - 1] = 0; //remove value at last index -> note to self: this line is not needed you can just update size and the list will ignore the last index value
+        size_--; //update size of list
+        return true;
+    }
+}
+
+bool SequentialList::replace(unsigned int index,DataType val) // Replaces the value at the given index with the given value.
+{
+    if (empty()){ //check if list is empty
+        return false;
+    }
+    else if (index >= size_ || index < 0){  //check if index is valid (note: if index = size -> nothing to replace)
+        return false;
+    }
+
+    data_[index] = val;
+    return true;
+}

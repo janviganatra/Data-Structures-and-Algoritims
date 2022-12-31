@@ -1,0 +1,133 @@
+#include "circular-queue.h"
+#include "iostream"
+
+using namespace std;
+
+const CircularQueue::QueueItem CircularQueue::EMPTY_QUEUE = -999;
+
+// CONSTRUCTORS/DESTRUCTOR
+// Default constructor of the class CircularQueue. It uses 16 as the
+// initial capacity of the array, and allocates the required memory
+// space for the queue. The function appropriately initializes the
+// fields of the created empty queue.
+CircularQueue::CircularQueue() {
+    size_ = 0; //initial size
+    capacity_ = 16;// initial capacity
+    items_ = new QueueItem [capacity_];// create an array of ints using dynamic memory allocation
+    head_ = 0;//reference to front of queue
+    tail_ = 0;//reference to rear of queue
+}
+
+// Parametric constructor of the class CircularQueue. It allocates
+// the required memory space for the queue of the given capacity.
+// The function appropriately initializes the fields of the created
+// empty queue.
+CircularQueue::CircularQueue(unsigned int capacity) {
+    size_ = 0; //initial size
+    capacity_ = capacity;// initial capacity
+    items_ = new QueueItem [capacity_];// create an array of ints using dynamic memory allocation
+    head_ = 0;//reference to front of queue
+    tail_ = 0;//reference to rear of queue
+}
+
+// Destructor of the class CircularQueue. It deallocates the memory
+// space allocated for the queue.
+CircularQueue::~CircularQueue() {
+    delete[] items_; //delete queue array
+}
+
+// ACCESSORS
+// Returns true if the queue is empty and false otherwise.
+bool CircularQueue::empty() const {
+    if (size_ == 0){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+// Returns true if the queue is full and false otherwise.
+bool CircularQueue::full() const {
+    if (size_ == capacity_){
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+// Returns the number of items in the queue.
+int CircularQueue::size() const {
+    return size_;
+}
+
+// MUTATORS
+// Takes as an argument a QueueItem value. If the queue is not at capacity,
+// it inserts the value at the rear of the queue after the last item, and
+// returns true. If the insertion fails due to lack of space, it
+// returns false.
+bool CircularQueue::enqueue(QueueItem value) { //inserts item at rear of queue (tail)
+    if (full()){
+        return false; //queue is full, cant add value
+    }
+    else{//not full -> add value
+        items_[tail_] = value;
+        tail_ = tail_ + 1; //update iRear index value
+        size_++;
+
+        if (tail_ == capacity_){//if the iRear is pointing to the very last index in the circular array reset index (use cap instead of size since size changes based on number of meaningful data in queue, but cap does not)
+            tail_ = 0; //set it equal to the 0th index
+        }
+        //extra note: why cap and not cap - 1? because when an item is inserted the iRear increments by one, so when something gets added to the very last index ex, index 15, iRear = 16 which is not an index so when iRear == capacity need to reset it to index 0
+        return true;
+    }
+}
+
+// Removes the item from the front of the queue and returns it. If the queue
+// is empty, it returns the EMPTY_QUEUE constant instead.
+CircularQueue::QueueItem CircularQueue::dequeue() {//removes item from front of queue and returns a reference to that item
+    if (size_ == 0){
+        return EMPTY_QUEUE;
+    }
+    else{
+        int returnitem = items_[head_];
+        items_[head_] = 0; //this line is not needed, just for understanding
+        size_--;//update size
+        head_ = head_ + 1;//increment the head index by one
+
+        if (head_ == capacity_){ //if iFront reaches very last index
+            head_ = 0; //set it to 0th index
+        }
+
+        return returnitem;//return the dequeued item
+    }
+
+}
+
+// Returns the value at the front of the queue without removing it
+// from the queue. If the queue is empty, it returns the EMPTY_QUEUE
+// constant instead.
+CircularQueue::QueueItem CircularQueue::peek() const {//returns front item in queue without removing it
+    if (size_ == 0){
+        return EMPTY_QUEUE;//if the queue is empty
+    }
+    else{
+        return items_[head_];//return value at front of queue
+    }
+}
+
+// Prints the queue items sequentially and in order, from the front
+// to the rear of the queue.
+void CircularQueue::print() const {
+    if (empty()){
+        cout << "queue is empty" << endl;
+    }
+    else{
+        for (int i = head_; i < capacity_; i++){//start at head so that dequeued items are not printed
+            cout << items_[i] << " ";
+        }
+        cout << endl;
+    }
+}
+

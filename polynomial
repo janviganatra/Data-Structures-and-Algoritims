@@ -1,0 +1,150 @@
+#include "polynomial.h"
+#include "doubly-linked-list.h"
+#include <iostream>
+using namespace std;
+
+Polynomial::Polynomial(int A[], int size) {//takes an array, uses it to initialize a doubly linked list of coefficients
+
+    size_ = size; //size of array is the size of the doubly linked list
+    //DoublyLinkedList coefficients;
+
+    for (int i = 0; i < size_; i++){ //iterate through entire array (index starts at 0 and size starts at 1)
+        coefficients.insert_back(A[i]);
+    }
+}
+
+Polynomial* Polynomial::add(Polynomial* rhs) {
+    //add the coefficients of each term (matching index)
+    // *this + *rhs
+    int sizeofresult;//# of coefficients in resulting list
+
+    if (this->size_ > rhs->size_){ //size of this > rhs
+        for (int i = rhs->size_; i < this->size_; i++){
+            rhs->coefficients.insert(0,i); //iterate through rhs (i = size_ of rhs; i < sizeoflarger(this); i++) and insert 0 at each index
+        }
+        sizeofresult = this->size_;//# of coefficients in resulting list - size of bigger list
+        //rhs->coefficients.print();
+    }
+    else if (rhs->size_ > this->size_) { //size of rhs > this
+        for (int i = this->size_; i < rhs->size_; i++) {//iterate through this (i = size_; i < sizeoflarger(rhs); i++) and insert 0 at each index
+            this->coefficients.insert(0, i);
+        }
+        sizeofresult = rhs->size_;//# of coefficients in resulting list - size of bigger list
+    }
+    else{
+        sizeofresult = rhs->size_;//if both lists are of equal size
+    }
+//    this->coefficients.print();
+//    rhs->coefficients.print();
+
+    //size of both lists are now the same
+
+    int sums[sizeofresult];//create new array of ints
+
+    for (int i = 0; i < sizeofresult; i++){//iterate through list until size of list (a.k.a size of largest list)
+        int sum = (this->coefficients.select(i) + rhs->coefficients.select(i));//sum of coefficents at matching index
+        sums[i] = sum;//add sum to sums array
+        }
+
+    Polynomial *result = new Polynomial(sums, sizeofresult);//turn array of sums into a doubly linked list
+//    result->coefficients.print();
+    return result;//return resulting polynomial list
+}
+
+Polynomial* Polynomial::sub(Polynomial* rhs) {
+    //subtract the coefficients of each term (matching index)
+
+    int sizeofresult;//# of coefficients in resulting list
+
+    if (this->size_ > rhs->size_){ //size of rhs is smaller
+        for (int i = rhs->size_; i < this->size_; i++){
+            rhs->coefficients.insert(0,i); //iterate through rhs (i = size_ of rhs; i < sizeoflarger(this); i++) and insert 0 at each index
+        }
+        sizeofresult = this->size_;//# of coefficients in resulting list - size of bigger list
+    }
+    else if (rhs->size_ > this->size_) { //size of this is smaller
+        for (int i = this->size_; i < rhs->size_; i++) {//iterate through this (i = size_; i < sizeoflarger(rhs); i++) and insert 0 at each index
+            this->coefficients.insert(0, i);
+        }
+        sizeofresult = rhs->size_;//# of coefficients in resulting list - size of bigger list
+    }
+    else {
+        sizeofresult = rhs->size_;//if both lists are of equal size
+    }
+//    this->coefficients.print();
+//    rhs->coefficients.print();
+
+    //size of both lists are now the same
+    int subtract[sizeofresult];//create new array of ints
+
+    for (int i = 0; i < sizeofresult; i++){//iterate through list until size of list (a.k.a size of largest list)
+        int subtraction = (this->coefficients.select(i) - rhs->coefficients.select(i));//subtract
+        subtract[i] = subtraction;//add sum to sums array
+    }
+
+    Polynomial *result = new Polynomial(subtract, sizeofresult);//turn array of sums into a doubly linked list
+//    result->coefficients.print();
+    return result;//return resulting polynomial list
+}
+
+Polynomial* Polynomial::mul(Polynomial* rhs) {
+    //multiply coefficients and add exponents
+
+    int numofterms = (rhs->size_ + this->size_) - 1;//number of terms in resulting polynomial
+    int product[numofterms];//declare an array for the products
+
+    for (int i = 0; i < numofterms; i++){ //initialize product polynomial
+        product[i] = 0;//insert 0 at each index
+    }
+
+    for (int i = 0; i < this->size_; i++){ //iterate through every term of this polynomial
+
+        for(int j = 0; j < rhs->size_; j++){//multiply current term of this polynomial with every term of rhs polynomial
+            product[i + j] = product[i + j] + rhs->coefficients.select(j) * this->coefficients.select(i);
+        }
+    }
+    Polynomial *result = new Polynomial(product, numofterms);
+    //result->coefficients.print();
+    return result;
+}
+
+void Polynomial::print(){
+
+    bool hasstarted = false;
+
+    for (int i = size_ - 1; i >= 0; i--){//iterate from tail to print in descending order
+
+        if (coefficients.select(i) == 0){
+            continue;
+        }
+        else {
+            if (hasstarted == false){ //if nothing has been printed yet
+
+                if (coefficients.select(i) < 0){
+                    cout << "(" << coefficients.select(i) << ")" << "x^" << i;//output with brackets for negative number
+                    hasstarted = true;
+                }
+                else {
+                    cout << coefficients.select(i) << "x^" << i;//output coefficient w/o brackets for positive number
+                    hasstarted = true;
+                }
+            }
+            else {
+                if (coefficients.select(i) < 0){
+                    cout << " + " << "(" << coefficients.select(i) << ")" << "x^" << i;//output with brackets
+                    hasstarted = true;
+                }
+                else {
+                    cout << " + " << coefficients.select(i) << "x^" << i;//output coefficient w/o brackets
+                    hasstarted = true;
+                }
+            }
+        }
+    }
+    if (hasstarted == false){ //if all elements are 0 output empty 
+        cout << "empty";
+    }
+
+    cout << endl;
+}
+
